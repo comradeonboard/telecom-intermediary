@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { getDb } = require("../db/database");
+const { validateCustomer } = require("../middleware/validate");
 
 router.get("/", async (_req, res) => {
   const db = await getDb();
@@ -25,9 +26,8 @@ router.get("/:id", async (req, res) => {
   res.json(customer);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", validateCustomer, async (req, res) => {
   const { name, email, phone, company_id } = req.body;
-  if (!name) return res.status(400).json({ error: "name is required" });
   const db = await getDb();
   const result = db.prepare(
     "INSERT INTO customers (name, email, phone, company_id) VALUES (?, ?, ?, ?)"
@@ -36,7 +36,7 @@ router.post("/", async (req, res) => {
   res.status(201).json(customer);
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", validateCustomer, async (req, res) => {
   const { name, email, phone, company_id } = req.body;
   const db = await getDb();
   const existing = db.prepare("SELECT * FROM customers WHERE id = ?").get(req.params.id);

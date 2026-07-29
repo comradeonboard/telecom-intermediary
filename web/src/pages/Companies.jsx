@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useToast } from "../context/ToastContext";
 
 function Companies() {
   const [companies, setCompanies] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: "", sector: "", contact_email: "", phone: "", address: "" });
+  const { addToast } = useToast();
 
   useEffect(() => {
     fetch("/api/companies")
@@ -17,11 +19,27 @@ function Companies() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
-    }).then(() => {
-      setShowForm(false);
-      setForm({ name: "", sector: "", contact_email: "", phone: "", address: "" });
-      fetch("/api/companies").then((r) => r.json()).then(setCompanies);
-    });
+    })
+      .then((r) => {
+        if (!r.ok) return r.json().then((err) => { throw new Error(err.error); });
+        return r.json();
+      })
+      .then(() => {
+        setShowForm(false);
+        setForm({ name: "", sector: "", contact_email: "", phone: "", address: "" });
+        addToast("Company added successfully", "success");
+        fetch("/api/companies").then((r) => r.json()).then(setCompanies);
+      })
+      .catch((err) => addToast(err.message, "error"));
+  };
+
+  const handleDelete = (id) => {
+    fetch(`/api/companies/${id}`, { method: "DELETE" })
+      .then(() => {
+        addToast("Company deleted", "success");
+        fetch("/api/companies").then((r) => r.json()).then(setCompanies);
+      })
+      .catch(() => addToast("Failed to delete company", "error"));
   };
 
   return (
@@ -99,6 +117,7 @@ function Companies() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -109,6 +128,11 @@ function Companies() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.contact_email || "—"}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.phone || "—"}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{c.created_at?.split("T")[0] || "—"}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <button onClick={() => handleDelete(c.id)} className="text-red-500 hover:text-red-700 font-medium">
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

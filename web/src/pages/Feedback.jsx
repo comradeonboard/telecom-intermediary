@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useToast } from "../context/ToastContext";
 
 function Feedback() {
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ customer_id: "", company_id: "", subject: "", message: "" });
+  const { addToast } = useToast();
 
   useEffect(() => {
     fetch("/api/feedback")
@@ -17,11 +19,27 @@ function Feedback() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
-    }).then(() => {
-      setShowForm(false);
-      setForm({ customer_id: "", company_id: "", subject: "", message: "" });
-      fetch("/api/feedback").then((r) => r.json()).then(setItems);
-    });
+    })
+      .then((r) => {
+        if (!r.ok) return r.json().then((err) => { throw new Error(err.error); });
+        return r.json();
+      })
+      .then(() => {
+        setShowForm(false);
+        setForm({ customer_id: "", company_id: "", subject: "", message: "" });
+        addToast("Feedback submitted", "success");
+        fetch("/api/feedback").then((r) => r.json()).then(setItems);
+      })
+      .catch((err) => addToast(err.message, "error"));
+  };
+
+  const handleDelete = (id) => {
+    fetch(`/api/feedback/${id}`, { method: "DELETE" })
+      .then(() => {
+        addToast("Feedback deleted", "success");
+        fetch("/api/feedback").then((r) => r.json()).then(setItems);
+      })
+      .catch(() => addToast("Failed to delete feedback", "error"));
   };
 
   const statusColors = {
@@ -96,6 +114,7 @@ function Feedback() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -110,6 +129,11 @@ function Feedback() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{f.created_at?.split("T")[0] || "—"}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <button onClick={() => handleDelete(f.id)} className="text-red-500 hover:text-red-700 font-medium">
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

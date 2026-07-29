@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { getDb } = require("../db/database");
+const { validateFeedback } = require("../middleware/validate");
 
 router.get("/", async (_req, res) => {
   const db = await getDb();
@@ -27,9 +28,8 @@ router.get("/:id", async (req, res) => {
   res.json(item);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", validateFeedback, async (req, res) => {
   const { customer_id, company_id, subject, message } = req.body;
-  if (!message) return res.status(400).json({ error: "message is required" });
   const db = await getDb();
   const result = db.prepare(
     "INSERT INTO feedback (customer_id, company_id, subject, message) VALUES (?, ?, ?, ?)"
@@ -44,7 +44,7 @@ router.post("/", async (req, res) => {
   res.status(201).json(feedback);
 });
 
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", validateFeedback, async (req, res) => {
   const { subject, message, status } = req.body;
   const db = await getDb();
   const existing = db.prepare("SELECT * FROM feedback WHERE id = ?").get(req.params.id);
