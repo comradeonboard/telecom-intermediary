@@ -20,7 +20,7 @@ export default function DashboardScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>TIB Dashboard</Text>
+      <Text style={styles.title}>TelLink Dashboard</Text>
       {["companies", "customers", "feedback"].map((key) => (
         <TouchableOpacity
           key={key}

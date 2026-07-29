@@ -1,6 +1,6 @@
-# TIB — Telecom Intermediary
+# TelLink
 
-A platform that acts as an intermediary between telecom-adjacent companies and their customers. Enables companies to manage customer interactions and lets customers provide feedback, check service status, and report issues.
+A platform acting as an intermediary between telecom-adjacent companies and their customers. Enables companies to manage customer interactions and lets customers provide feedback, check service status, and report issues.
 
 ## Structure
 

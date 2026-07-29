@@ -14,7 +14,7 @@ function Layout({ children }) {
     <div className="flex min-h-screen bg-gray-100">
       <aside className="w-64 bg-gray-900 text-white flex flex-col fixed inset-y-0 left-0">
         <div className="p-6 text-xl font-bold border-b border-gray-700">
-          TIB Platform
+          TelLink
         </div>
         <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => (
